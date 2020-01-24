@@ -1,0 +1,44 @@
+<html>
+    <head>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    </head>
+    </head>
+    <body>
+        <h1>Welcome to Cards Donkey Game</h1>
+        <button id="create" onclick="createRoom()">Create Room</button>
+        <button id="join" onclick="joinRoom()">Join Room</button>
+        <div id="users"></div>
+    </body>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+        let roomName;
+        let userName=prompt("Enter the Name");
+        function createRoom(){
+            roomName=prompt("Enter a Room Name");
+            socket.emit("createRoom",{"roomName":roomName,"userName":userName});
+        }
+        function joinRoom(){
+            roomName=prompt("Enter a Room Name");
+            socket.emit("joinRoom",{"roomName":roomName,"userName":userName});
+        }
+        socket.on("noRoom",function(){
+            alert("InValid");
+        })
+        socket.on("roomCreated",function(){
+            alert("Room Created");
+        });
+        socket.on("roomJoined",function(){
+            alert("Joined the Room");
+        });
+        socket.on("userJoined",function(users){
+            console.log(users);
+            $("#create").hide();
+            $("#join").hide();
+            $("#users").append("<p>Friends Available in the Room");
+            for(let i in users){
+                $("#users").append("<p>"+users[i].name+"</p>");
+            }
+        })
+    </script>
+</html>
