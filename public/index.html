@@ -35,6 +35,7 @@
             console.log(users);
             $("#create").hide();
             $("#join").hide();
+            $("#users").html("");
             $("#users").append("<p>Friends Available in the Room");
             for(let i in users){
                 $("#users").append("<p>"+users[i].name+"</p>");
