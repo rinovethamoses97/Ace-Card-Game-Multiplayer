@@ -38,7 +38,12 @@
             $("#users").html("");
             $("#users").append("<p>Friends Available in the Room");
             for(let i in users){
-                $("#users").append("<p>"+users[i].name+"</p>");
+                if(users[i].connected){
+                    $("#users").append("<p>"+users[i].name+" <span style='color:green'>Connected</span></p>");
+                }
+                else{
+                    $("#users").append("<p>"+users[i].name+" <span style='color:red'>Disconnected</span></p>");
+                }
             }
         })
     </script>

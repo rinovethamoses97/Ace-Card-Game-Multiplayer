@@ -40,6 +40,17 @@ io.on("connection",(socket)=>{
         }
         socket.emit("noRoom");
     });
+    socket.on("disconnect",()=>{
+        for(let i in rooms){
+            for(let j in rooms[i].users){
+                if(rooms[i].users[j].id===socket.id){
+                    // remove the user from the room;
+                    rooms[i].users[j].connected=false;
+                    io.sockets.in(rooms[i].name).emit("userJoined",rooms[i].users);
+                }
+            }
+        }
+    })
 });
 function checkRoomAvailability(name){
     for(let i in rooms){
