@@ -1,19 +1,63 @@
 <html>
     <head>
+        <!-- Latest compiled and minified CSS -->
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
+
+        <!-- jQuery library -->
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+
+        <!-- Popper JS -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+
+        <!-- Latest compiled JavaScript -->
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
+        <style>
+            img{border:solid 1px red; margin:10px;width:100px;height:100px}
+            .selected{
+                box-shadow:0px 12px 22px 1px rgb(0, 0, 0);
+            }
+        </style>
     </head>
     </head>
     <body>
-        <h1>Welcome to Cards Donkey Game</h1>
-        <button id="create" onclick="createRoom()">Create Room</button>
-        <button id="join" onclick="joinRoom()">Join Room</button>
-        <div id="users"></div>
+        <div class="container">
+            <div class="row">
+                <div class="col-md-12">
+                    <h1>Welcome to Cards Donkey Game</h1>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12">
+                    <div id="buttons">
+                        <button id="create" onclick="createRoom()">Create Room</button>
+                        <button id="join" onclick="joinRoom()">Join Room</button>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12">
+                    <div id="users"></div>
+                </div>
+            </div>
+            <div class="row" id="table" style="background-color: aqua;">
+            </div>
+            <div class="row">
+                <div class="col-md-12">
+                    <div id="cards">
+
+                    </div>   
+                </div>
+            </div>
+        </div>
     </body>
     <script src="/socket.io/socket.io.js"></script>
     <script>
         const socket = io();
         let roomName;
         let userName=prompt("Enter the Name");
+        let selectedCard;
+        let currentRoom=null;
+        let currentUser;
         function createRoom(){
             roomName=prompt("Enter a Room Name");
             socket.emit("createRoom",{"roomName":roomName,"userName":userName});
@@ -27,6 +71,7 @@
         })
         socket.on("roomCreated",function(){
             alert("Room Created");
+            $("#buttons").html("<button id='start' onclick='startGame()'>Start Game</button");
         });
         socket.on("roomJoined",function(){
             alert("Joined the Room");
@@ -45,6 +90,75 @@
                     $("#users").append("<p>"+users[i].name+" <span style='color:red'>Disconnected</span></p>");
                 }
             }
+        });
+        socket.on("init",function(user){
+            currentUser=user;
+            $("#cards").html("");
+            for(let i in user.cards){
+                $("#cards").append(`<img id='${user.cards[i].code}' onclick=select('${user.cards[i].code}') src='${user.cards[i].image}'>`);
+            }
+            $("#buttons").html("<button id='play' onclick='playGame()'>Put on Table</button");
+        });
+        socket.on("tableLoad",function(room){
+            console.log(room);
+            currentRoom=room;
+            $("#table").html("")
+            for(let i in room.users){
+                if(room.users[i].currentChance){
+                    $("#table").append(`<div class='col-md-2'><div class='row'>Current:${room.users[i].name}</div><div class='row'></div></div>`);
+                }
+                else{
+                    if(room.users[i].currentCard!=null){
+                        $("#table").append(`<div class='col-md-2'><div class='row'>${room.users[i].name}</div><div class='row'><img src='${room.users[i].currentCard.image}'></div></div>`);
+                    }
+                    else{
+                        $("#table").append(`<div class='col-md-2'><div class='row'>${room.users[i].name}</div><div class='row'></div></div>`);
+                    }
+                }
+                    
+            }
+        })
+        function startGame(){
+            socket.emit("startGame",roomName);
+        }
+        function select(id){
+            for(let i in currentRoom.users){
+                if(currentRoom.users[i].currentCard!=null){
+                    if(!(id[1]===currentRoom.users[i].currentCard.code[1])){
+                        for(let j in currentUser.cards){
+                            if(currentUser.cards[j].code[1]===currentRoom.users[i].currentCard.code[1]){
+                                alert("Wrong Selection");
+                                return;
+                            }
+                        }
+                    }
+                    else{
+                        break;
+                    }
+                    // cut condition
+                    break;
+                }
+                
+            }       
+            selectedCard=id;
+            $('.selected').removeClass('selected');
+            $(`#${id}`).addClass('selected');
+        }
+        function playGame(){
+            console.log(selectedCard);
+            let cut=false;
+            for(let i in currentRoom.users){
+                if(currentRoom.users[i]!=currentUser && currentRoom.users[i].currentCard!=null){
+                    if(selectedCard[1]!=currentRoom.users[i].currentCard.code[1]){
+                        cut=true;
+                        console.log("Cut condition happened");
+                    }
+                }
+            }
+            socket.emit("putOnTable",{"roomName":roomName,"card":selectedCard,"cut":cut});
+        }
+        socket.on("notYourChance",function(){
+            alert("Not your Chance");
         })
     </script>
 </html>

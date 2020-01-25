@@ -1,6 +1,7 @@
 let express=require("express");
 let Room=require("./room.js");
-let User=require("./user.js");
+let User=require("./user.js")
+let axios=require("axios");
 let app=express();
 app.use(express.static("./public"));
 let rooms=[];
@@ -29,7 +30,7 @@ io.on("connection",(socket)=>{
     });
     socket.on("joinRoom",(req)=>{
         for(let i in rooms){
-            if(rooms[i].name===req.roomName){
+            if(rooms[i].name===req.roomName && !rooms[i].lock){
                 let user=new User(socket.id,req.userName);
                 rooms[i].users.push(user);
                 socket.join(req.roomName);
@@ -50,8 +51,263 @@ io.on("connection",(socket)=>{
                 }
             }
         }
-    })
+    });
+    socket.on("startGame",(roomName)=>{
+        let room=lockRoom(roomName);
+        let noOfUsers=room.users.length;
+        let noOfCardsForPlayer=Math.floor(52/noOfUsers);
+        axios.get("https://deckofcardsapi.com/api/deck/new/draw/?count="+(noOfCardsForPlayer*noOfUsers)).then((res)=>{
+            let index=0;
+            for(let i in room.users){
+                for(let j=0;j<noOfCardsForPlayer;j++){
+                    room.users[i].cards.push(res.data.cards[index]);
+                    index++;
+                }
+                io.to(room.users[i].id).emit("init",room.users[i]);
+                room.users[0].currentChance=true;
+                io.to(room.name).emit("tableLoad",room);
+            };
+        }).catch((err)=>{
+            console.log(err);
+        })
+    });
+    socket.on("putOnTable",(req)=>{
+        console.log(req);
+        for(let i in rooms){
+            if(rooms[i].name===req.roomName){
+                for(let j in rooms[i].users){
+                    if(rooms[i].users[j].id===socket.id){
+                        if(!rooms[i].users[j].currentChance){
+                            socket.emit("notYourChance");
+                            return;
+                        }
+                        rooms[i].index++;
+                        for(let x in rooms[i].users[j].cards){
+                            if(rooms[i].users[j].cards[x].code===req.card){
+                                
+                                if(req.cut){
+                                    rooms[i].users[j].currentCard=rooms[i].users[j].cards[x];
+                                    rooms[i].users[j].currentChance=false;
+                                    rooms[i].users[j].cards.splice(x,1);
+                                    io.to(rooms[i].name).emit("tableLoad",rooms[i]);
+                                    io.to(rooms[i].users[j].id).emit("init",rooms[i].users[j]);
+                                    setTimeout(cut,2000,rooms[i],rooms[i].users[j].currentCard,rooms[i].users[j]);
+                                    return;
+                                }
+                                else{
+                                    rooms[i].users[j].currentCard=rooms[i].users[j].cards[x];
+                                    rooms[i].users[j].currentChance=false;
+                                    rooms[i].users[j].cards.splice(x,1);
+                                }  
+                                
+                                
+                                if(rooms[i].index===rooms[i].users.length){
+                                    // clear the table
+                                    io.to(rooms[i].name).emit("tableLoad",rooms[i]);
+                                    io.to(rooms[i].users[j].id).emit("init",rooms[i].users[j]);                            
+                                    setTimeout(clearTable,2000,rooms[i]);
+                                    return;
+                                }
+                                else{
+                                    rooms[i].currentChance=(rooms[i].currentChance+1)%rooms[i].users.length;
+                                    rooms[i].users[rooms[i].currentChance].currentChance=true;
+                                    io.to(rooms[i].name).emit("tableLoad",rooms[i]);
+                                    io.to(rooms[i].users[j].id).emit("init",rooms[i].users[j]);
+                                    return;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    });
 });
+function cut(room,card,user){
+    room.index=0;
+    user.currentCard=null;
+    for(let i in room.users){
+        if(room.users[i].currentCard!=null && room.users[i].currentCard.code[0]==="A"){
+            room.currentChance=parseInt(i);
+            room.users[i].currentChance=true;
+            for(let j in room.users){
+                if(room.users[j].currentCard!=null){
+                    room.users[i].cards.push(room.users[j].currentCard);
+                    room.users[i].currentCard=null;
+                }
+            }
+            room.user[i].cards.push(card);
+            io.to(room.name).emit("tableLoad",room);
+            io.to(rooms.users[i].id).emit("init",rooms.users[i]);
+            return;
+        }
+    }
+    for(let i in room.users){
+        if( room.users[i].currentCard!=null && room.users[i].currentCard.code[0]==="K"){
+            room.currentChance=parseInt(i);
+            room.users[i].currentChance=true;
+            for(let j in room.users){
+                if(room.user[j].currentCard!=null){
+                    room.users[i].cards.push(room.users[j].currentCard);
+                    room.users[i].currentCard=null;
+                }
+            }
+            room.user[i].cards.push(card);
+            io.to(room.name).emit("tableLoad",room);
+            io.to(rooms.users[i].id).emit("init",rooms.users[i]);
+            return;
+        }
+    }
+    for(let i in room.users){
+        if(room.users[i].currentCard!=null && room.users[i].currentCard.code[0]==="Q"){
+            room.currentChance=parseInt(i);
+            room.users[i].currentChance=true;
+            for(let j in room.users){
+                if(room.user[j].currentCard!=null){
+                    room.users[i].cards.push(room.users[j].currentCard);
+                    room.users[i].currentCard=null;
+                }
+            }
+            room.user[i].cards.push(card);
+            io.to(room.name).emit("tableLoad",room);
+            io.to(rooms.users[i].id).emit("init",rooms.users[i]);
+            return;
+        }
+    }
+    for(let i in room.users){
+        if(room.users[i].currentCard!=null && room.users[i].currentCard.code[0]==="J"){
+            room.currentChance=parseInt(i);
+            room.users[i].currentChance=true;
+            for(let j in room.users){
+                if(room.users[j].currentCard!=null){
+                    room.user[i].cards.push(room.users[j].currentCard);
+                    room.users[i].currentCard=null;
+                }
+            }
+            room.user[i].cards.push(card);
+            io.to(room.name).emit("tableLoad",room);
+            io.to(rooms.users[i].id).emit("init",rooms.users[i]);
+            return;
+        }
+    }
+    for(let i in room.users){
+        if(room.users[i].currentCard!=null && room.users[i].currentCard.code[0]==="0"){
+            room.currentChance=parseInt(i);
+            room.users[i].currentChance=true;
+            for(let j in room.users){
+                if(room.users[j].currentCard!=null){
+                    room.user[i].cards.push(room.users[j].currentCard);
+                    room.users[i].currentCard=null;
+                }
+            }
+            room.user[i].cards.push(card);
+            io.to(room.name).emit("tableLoad",room);
+            io.to(rooms.users[i].id).emit("init",rooms.users[i]);
+            return;
+        }
+    }
+    let max=1;
+    let us;
+    let usIndex=-1;
+    for(let i in room.users){
+        if(room.users[i].currentCard!=null && parseInt(room.users[i].currentCard.code[0])>max){
+            us=room.users[i];
+            usIndex=i;
+            max=parseInt(room.users[i].currentCard.code[0]);
+        }
+    }
+    room.currentChance=parseInt(usIndex);
+    us.currentChance=true;
+    for(let j in room.users){
+        if(room.users[j].currentCard!=null){
+            us.cards.push(room.users[j].currentCard);
+            room.users[j].currentCard=null;
+        }
+    }
+    us.cards.push(card);
+    io.to(room.name).emit("tableLoad",room);
+    io.to(us.id).emit("init",us);
+    return;
+}
+function clearTable(room){
+    room.index=0;
+    for(let i in room.users){
+        if(room.users[i].currentCard.code[0]==="A"){
+            room.currentChance=parseInt(i);
+            room.users[i].currentChance=true;
+            for(let j in room.users)
+                room.users[j].currentCard=null;
+            io.to(room.name).emit("tableLoad",room);
+            return;
+        }
+    }
+    for(let i in room.users){
+        if(room.users[i].currentCard.code[0]==="K"){
+            room.currentChance=parseInt(i);
+            room.users[i].currentChance=true;
+            for(let j in room.users)
+                room.users[j].currentCard=null;
+            io.to(room.name).emit("tableLoad",room);
+            return;
+        }
+    }
+    for(let i in room.users){
+        if(room.users[i].currentCard.code[0]==="Q"){
+            room.currentChance=parseInt(i);
+            room.users[i].currentChance=true;
+            for(let j in room.users)
+                room.users[j].currentCard=null;
+            io.to(room.name).emit("tableLoad",room);
+            return;
+        }
+    }
+    for(let i in room.users){
+        if(room.users[i].currentCard.code[0]==="J"){
+            room.currentChance=parseInt(i);
+            room.users[i].currentChance=true;
+            for(let j in room.users)
+                room.users[j].currentCard=null;
+            io.to(room.name).emit("tableLoad",room);
+            return;
+        }
+    }
+    for(let i in room.users){
+        if(room.users[i].currentCard.code[0]==="0"){
+            room.currentChance=parseInt(i);
+            room.users[i].currentChance=true;
+            for(let j in room.users)
+                room.users[j].currentCard=null;
+            io.to(room.name).emit("tableLoad",room);
+            return;
+        }
+    }
+    let max=1;
+    let us;
+    let usIndex=-1;
+    for(let i in room.users){
+        if(parseInt(room.users[i].currentCard.code[0])>max){
+            us=room.users[i];
+            usIndex=i;
+            max=parseInt(room.users[i].currentCard.code[0]);
+        }
+    }
+    console.log("Check",us);
+    room.currentChance=parseInt(usIndex);
+    us.currentChance=true;
+    for(let j in room.users)
+        room.users[j].currentCard=null;
+    io.to(room.name).emit("tableLoad",room);
+    return;
+
+}
+function lockRoom(roomName){
+    for(let i in rooms){
+        if(rooms[i].name===roomName){
+            rooms[i].lock=true;
+            return rooms[i];
+        }
+    }
+}
 function checkRoomAvailability(name){
     for(let i in rooms){
         if(rooms[i].name===name){

@@ -5,6 +5,8 @@ class User{
         this.cards=[];
         this.name=name_;
         this.connected=true;
+        this.currentChance=false;
+        this.currentCard=null;
     }
 }
 module.exports=User;
