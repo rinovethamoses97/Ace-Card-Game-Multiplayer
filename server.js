@@ -147,7 +147,7 @@ function cut(room,card,user){
             room.currentChance=parseInt(i);
             room.users[i].currentChance=true;
             for(let j in room.users){
-                if(room.user[j].currentCard!=null){
+                if(room.users[j].currentCard!=null){
                     room.users[i].cards.push(room.users[j].currentCard);
                     room.users[i].currentCard=null;
                 }
@@ -163,7 +163,7 @@ function cut(room,card,user){
             room.currentChance=parseInt(i);
             room.users[i].currentChance=true;
             for(let j in room.users){
-                if(room.user[j].currentCard!=null){
+                if(room.users[j].currentCard!=null){
                     room.users[i].cards.push(room.users[j].currentCard);
                     room.users[i].currentCard=null;
                 }
