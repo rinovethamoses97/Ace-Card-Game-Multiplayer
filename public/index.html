@@ -121,31 +121,38 @@
         function startGame(){
             socket.emit("startGame",roomName);
         }
-        function select(id){
+        function validate(id){
             for(let i in currentRoom.users){
                 if(currentRoom.users[i].currentCard!=null){
                     if(!(id[1]===currentRoom.users[i].currentCard.code[1])){
                         for(let j in currentUser.cards){
                             if(currentUser.cards[j].code[1]===currentRoom.users[i].currentCard.code[1]){
                                 alert("Wrong Selection");
-                                return;
+                                return false;
                             }
                         }
                     }
                     else{
-                        break;
+                        return true;
                     }
                     // cut condition
-                    break;
+                    return true;
                 }
                 
-            }       
-            selectedCard=id;
-            $('.selected').removeClass('selected');
-            $(`#${id}`).addClass('selected');
+            }
+            return true;
+        }
+        function select(id){
+            if(validate(id)){
+                selectedCard=id;
+                $('.selected').removeClass('selected');
+                $(`#${id}`).addClass('selected');
+            }  
         }
         function playGame(){
-            console.log(selectedCard);
+            if(!validate(selectedCard)){
+                return;
+            }
             let cut=false;
             for(let i in currentRoom.users){
                 if(currentRoom.users[i]!=currentUser && currentRoom.users[i].currentCard!=null){
