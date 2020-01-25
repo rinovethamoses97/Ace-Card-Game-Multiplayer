@@ -136,9 +136,9 @@ function cut(room,card,user){
                     room.users[i].currentCard=null;
                 }
             }
-            room.user[i].cards.push(card);
+            room.users[i].cards.push(card);
             io.to(room.name).emit("tableLoad",room);
-            io.to(rooms.users[i].id).emit("init",rooms.users[i]);
+            io.to(room.users[i].id).emit("init",room.users[i]);
             return;
         }
     }
@@ -152,9 +152,9 @@ function cut(room,card,user){
                     room.users[i].currentCard=null;
                 }
             }
-            room.user[i].cards.push(card);
+            room.users[i].cards.push(card);
             io.to(room.name).emit("tableLoad",room);
-            io.to(rooms.users[i].id).emit("init",rooms.users[i]);
+            io.to(room.users[i].id).emit("init",room.users[i]);
             return;
         }
     }
@@ -168,9 +168,9 @@ function cut(room,card,user){
                     room.users[i].currentCard=null;
                 }
             }
-            room.user[i].cards.push(card);
+            room.users[i].cards.push(card);
             io.to(room.name).emit("tableLoad",room);
-            io.to(rooms.users[i].id).emit("init",rooms.users[i]);
+            io.to(room.users[i].id).emit("init",room.users[i]);
             return;
         }
     }
@@ -180,13 +180,13 @@ function cut(room,card,user){
             room.users[i].currentChance=true;
             for(let j in room.users){
                 if(room.users[j].currentCard!=null){
-                    room.user[i].cards.push(room.users[j].currentCard);
+                    room.users[i].cards.push(room.users[j].currentCard);
                     room.users[i].currentCard=null;
                 }
             }
-            room.user[i].cards.push(card);
+            room.users[i].cards.push(card);
             io.to(room.name).emit("tableLoad",room);
-            io.to(rooms.users[i].id).emit("init",rooms.users[i]);
+            io.to(room.users[i].id).emit("init",room.users[i]);
             return;
         }
     }
@@ -196,13 +196,13 @@ function cut(room,card,user){
             room.users[i].currentChance=true;
             for(let j in room.users){
                 if(room.users[j].currentCard!=null){
-                    room.user[i].cards.push(room.users[j].currentCard);
+                    room.users[i].cards.push(room.users[j].currentCard);
                     room.users[i].currentCard=null;
                 }
             }
-            room.user[i].cards.push(card);
+            room.users[i].cards.push(card);
             io.to(room.name).emit("tableLoad",room);
-            io.to(rooms.users[i].id).emit("init",rooms.users[i]);
+            io.to(room.users[i].id).emit("init",room.users[i]);
             return;
         }
     }
