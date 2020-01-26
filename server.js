@@ -64,11 +64,17 @@ io.on("connection",(socket)=>{
                     index++;
                 }
                 io.to(room.users[i].id).emit("init",room.users[i]);
+                let AS=false;
                 for(let j in room.users[i].cards){
                     if(room.users[i].cards[j].code==="AS"){
+                        AS=true;
                         room.users[i].currentChance=true;
                         room.currentChance=parseInt(i);
                     }
+                }
+                if(!AS){
+                    room.users[0].currentChance=true;
+                    room.currentChance=0;
                 }
                 io.to(room.name).emit("tableLoad",room);
             };
