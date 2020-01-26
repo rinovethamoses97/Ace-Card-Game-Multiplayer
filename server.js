@@ -142,7 +142,6 @@ function cut(room,card,user){
                 }
             }
             room.users[i].cards.push(card);
-            winCheck(room);
             io.to(room.name).emit("tableLoad",room);
             io.to(room.users[i].id).emit("init",room.users[i]);
             return;
@@ -159,7 +158,6 @@ function cut(room,card,user){
                 }
             }
             room.users[i].cards.push(card);
-            winCheck(room)
             io.to(room.name).emit("tableLoad",room);
             io.to(room.users[i].id).emit("init",room.users[i]);
             return;
@@ -176,7 +174,6 @@ function cut(room,card,user){
                 }
             }
             room.users[i].cards.push(card);
-            winCheck(room);
             io.to(room.name).emit("tableLoad",room);
             io.to(room.users[i].id).emit("init",room.users[i]);
             return;
@@ -193,7 +190,6 @@ function cut(room,card,user){
                 }
             }
             room.users[i].cards.push(card);
-            winCheck(room);
             io.to(room.name).emit("tableLoad",room);
             io.to(room.users[i].id).emit("init",room.users[i]);
             return;
@@ -210,7 +206,6 @@ function cut(room,card,user){
                 }
             }
             room.users[i].cards.push(card);
-            winCheck(room)
             io.to(room.name).emit("tableLoad",room);
             io.to(room.users[i].id).emit("init",room.users[i]);
             return;
@@ -235,17 +230,9 @@ function cut(room,card,user){
         }
     }
     us.cards.push(card);
-    winCheck(room)
     io.to(room.name).emit("tableLoad",room);
     io.to(us.id).emit("init",us);
     return;
-}
-function winCheck(room){
-    for(let i in room.users){
-        if(room.users[i].cards.length==0){
-            room.users[i].win=true;
-        }
-    }
 }
 function clearTable(room){
     room.index=0;
@@ -255,7 +242,6 @@ function clearTable(room){
             room.users[i].currentChance=true;
             for(let j in room.users)
                 room.users[j].currentCard=null;
-            winCheck(room)
             io.to(room.name).emit("tableLoad",room);           
             return;
         }
@@ -266,7 +252,6 @@ function clearTable(room){
             room.users[i].currentChance=true;
             for(let j in room.users)
                 room.users[j].currentCard=null;
-            winCheck(room)
             io.to(room.name).emit("tableLoad",room);
             return;
         }
@@ -277,7 +262,6 @@ function clearTable(room){
             room.users[i].currentChance=true;
             for(let j in room.users)
                 room.users[j].currentCard=null;
-            winCheck(room)
             io.to(room.name).emit("tableLoad",room);
             return;
         }
@@ -288,7 +272,6 @@ function clearTable(room){
             room.users[i].currentChance=true;
             for(let j in room.users)
                 room.users[j].currentCard=null;
-            winCheck(room)
             io.to(room.name).emit("tableLoad",room);
             return;
         }
@@ -299,7 +282,6 @@ function clearTable(room){
             room.users[i].currentChance=true;
             for(let j in room.users)
                 room.users[j].currentCard=null;
-            winCheck(room)
             io.to(room.name).emit("tableLoad",room);
             return;
         }
@@ -319,7 +301,6 @@ function clearTable(room){
     us.currentChance=true;
     for(let j in room.users)
         room.users[j].currentCard=null;
-    winCheck(room)
     io.to(room.name).emit("tableLoad",room);
     return;
 
