@@ -64,7 +64,12 @@ io.on("connection",(socket)=>{
                     index++;
                 }
                 io.to(room.users[i].id).emit("init",room.users[i]);
-                room.users[0].currentChance=true;
+                for(let j in room.users[i].cards){
+                    if(room.users[i].cards[j].code==="AS"){
+                        room.users[i].currentChance=true;
+                        room.currentChance=parseInt(i);
+                    }
+                }
                 io.to(room.name).emit("tableLoad",room);
             };
         }).catch((err)=>{
