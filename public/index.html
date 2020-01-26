@@ -55,7 +55,7 @@
         const socket = io();
         let roomName;
         let userName=prompt("Enter the Name");
-        let selectedCard;
+        let selectedCard=null;
         let currentRoom=null;
         let currentUser;
         function createRoom(){
@@ -104,20 +104,24 @@
             currentRoom=room;
             $("#table").html("")
             for(let i in room.users){
-                if(room.users[i].currentChance){
-                    $("#table").append(`<div class='col-md-2'><div class='row'>Current:${room.users[i].name}</div><div class='row'></div></div>`);
+                if(room.users[i].win){
+                    $("#table").append(`<div class='col-md-2'><div class='row'>Won:${room.users[i].name}</div><div class='row'></div></div>`);
                 }
                 else{
-                    if(room.users[i].currentCard!=null){
-                        $("#table").append(`<div class='col-md-2'><div class='row'>${room.users[i].name}</div><div class='row'><img src='${room.users[i].currentCard.image}'></div></div>`);
+                    if(room.users[i].currentChance){
+                        $("#table").append(`<div class='col-md-2'><div class='row'>Current:${room.users[i].name}</div><div class='row'></div></div>`);
                     }
                     else{
-                        $("#table").append(`<div class='col-md-2'><div class='row'>${room.users[i].name}</div><div class='row'></div></div>`);
+                        if(room.users[i].currentCard!=null){
+                            $("#table").append(`<div class='col-md-2'><div class='row'>${room.users[i].name}</div><div class='row'><img src='${room.users[i].currentCard.image}'></div></div>`);
+                        }
+                        else{
+                            $("#table").append(`<div class='col-md-2'><div class='row'>${room.users[i].name}</div><div class='row'></div></div>`);
+                        }
                     }
                 }
-                    
-            }
-        })
+            }    
+        });
         function startGame(){
             socket.emit("startGame",roomName);
         }
@@ -162,6 +166,10 @@
             if(!validate(selectedCard)){
                 return;
             }
+            if(selectedCard==null){
+                alert("Please Select a Card");
+                return;
+            }
             let cut=false;
             for(let i in currentRoom.users){
                 if(currentRoom.users[i]!=currentUser && currentRoom.users[i].currentCard!=null){
@@ -172,6 +180,7 @@
                 }
             }
             socket.emit("putOnTable",{"roomName":roomName,"card":selectedCard,"cut":cut});
+            selectedCard=null;
         }
         socket.on("notYourChance",function(){
             alert("Not your Chance");
