@@ -296,7 +296,7 @@ function clearTable(room){
             max=parseInt(room.users[i].currentCard.code[0]);
         }
     }
-    console.log("Check",us);
+    // console.log("Check",us);
     room.currentChance=parseInt(usIndex);
     us.currentChance=true;
     for(let j in room.users)

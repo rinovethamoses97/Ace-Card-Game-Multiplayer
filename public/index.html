@@ -143,6 +143,15 @@
             return true;
         }
         function select(id){
+            for(let i in currentRoom.users){
+                if(currentRoom.users[i].id===socket.id){
+                    if(!currentRoom.users[i].currentChance){
+                        alert("Not Your Chance");
+                        return;
+                    }
+                    break;
+                }
+            }
             if(validate(id)){
                 selectedCard=id;
                 $('.selected').removeClass('selected');
