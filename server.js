@@ -59,13 +59,13 @@ io.on("connection",(socket)=>{
         // let noOfCardsForPlayer=3;//for development purpose
         axios.get("https://deckofcardsapi.com/api/deck/new/draw/?count="+(noOfCardsForPlayer*noOfUsers)).then((res)=>{
             let index=0;
+            let AS=false;
             for(let i in room.users){
                 for(let j=0;j<noOfCardsForPlayer;j++){
                     room.users[i].cards.push(res.data.cards[index]);
                     index++;
                 }
-                io.to(room.users[i].id).emit("init",room.users[i]);
-                let AS=false;
+                io.to(room.users[i].id).emit("init",room.users[i]);        
                 for(let j in room.users[i].cards){
                     if(room.users[i].cards[j].code==="AS"){
                         AS=true;
@@ -73,12 +73,13 @@ io.on("connection",(socket)=>{
                         room.currentChance=parseInt(i);
                     }
                 }
-                if(!AS){
-                    room.users[0].currentChance=true;
-                    room.currentChance=0;
-                }
-                io.to(room.name).emit("tableLoad",room);
+                
             };
+            if(!AS){
+                room.users[0].currentChance=true;
+                room.currentChance=0;
+            }
+            io.to(room.name).emit("tableLoad",room);
         }).catch((err)=>{
             console.log(err);
         })
