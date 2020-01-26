@@ -162,12 +162,18 @@
                 $(`#${id}`).addClass('selected');
             }  
         }
-        function playGame(){
-            if(!validate(selectedCard)){
-                return;
-            }
+        function isCardSelected(){
             if(selectedCard==null){
                 alert("Please Select a Card");
+                return false;
+            }
+            return true;
+        }
+        function playGame(){
+            if(!isCardSelected()){
+                return;
+            }
+            if(!validate(selectedCard)){
                 return;
             }
             let cut=false;
