@@ -35,8 +35,11 @@
                 </div>
             </div>
             <div class="row">
-                <div class="col-md-12">
+                <div class="col-md-5">
                     <div id="users"></div>
+                </div>
+                <div class="col-md-5">
+                    <div id="winStatus"></div>
                 </div>
             </div>
             <div class="row" id="table" style="background-color: aqua;">
@@ -190,6 +193,12 @@
         }
         socket.on("notYourChance",function(){
             alert("Not your Chance");
+        });
+        socket.on("winStatus",function(winUsers){
+            $("#winStatus").html("");
+            for(let i in winUsers){
+                $("#winStatus").append(`<p>${i}. ${winUsers[i].name} won</p>`);
+            }
         })
     </script>
 </html>

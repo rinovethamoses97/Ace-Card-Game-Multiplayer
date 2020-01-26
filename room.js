@@ -5,6 +5,7 @@ class Room{
         this.lock=false;
         this.currentChance=0;
         this.index=0;
+        this.winUsers=[];
     }
 } 
 module.exports=Room;

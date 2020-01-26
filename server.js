@@ -56,6 +56,7 @@ io.on("connection",(socket)=>{
         let room=lockRoom(roomName);
         let noOfUsers=room.users.length;
         let noOfCardsForPlayer=Math.floor(52/noOfUsers);
+        // let noOfCardsForPlayer=3;//for development purpose
         axios.get("https://deckofcardsapi.com/api/deck/new/draw/?count="+(noOfCardsForPlayer*noOfUsers)).then((res)=>{
             let index=0;
             for(let i in room.users){
@@ -101,7 +102,8 @@ io.on("connection",(socket)=>{
                                     rooms[i].users[j].currentChance=false;
                                     rooms[i].users[j].cards.splice(x,1);
                                     io.to(rooms[i].name).emit("tableLoad",rooms[i]);
-                                    io.to(rooms[i].users[j].id).emit("init",rooms[i].users[j]);
+                                    io.to(rooms[i].users[j].id).emit("init",rooms[i].users[j]); 
+                                    
                                     setTimeout(cut,2000,rooms[i],rooms[i].users[j].currentCard,rooms[i].users[j]);
                                     return;
                                 }
@@ -115,7 +117,14 @@ io.on("connection",(socket)=>{
                                 if(rooms[i].index===rooms[i].users.length){
                                     // clear the table
                                     io.to(rooms[i].name).emit("tableLoad",rooms[i]);
-                                    io.to(rooms[i].users[j].id).emit("init",rooms[i].users[j]);                           
+                                    io.to(rooms[i].users[j].id).emit("init",rooms[i].users[j]);
+                                    for(let z=rooms[i].users.length-1;z>=0;z--){
+                                        if(rooms[i].users[z].cards.length==0){
+                                            rooms[i].winUsers.push(rooms[i].users[z]);
+                                            rooms[i].users.splice(z,1);
+                                        }
+                                    }            
+                                    io.in(rooms[i].name).emit("winStatus",rooms[i].winUsers);           
                                     setTimeout(clearTable,2000,rooms[i]);
                                     return;
                                 }
@@ -148,6 +157,13 @@ function cut(room,card,user){
                 }
             }
             room.users[i].cards.push(card);
+            for(let z=room.users.length-1;z>=0;z--){
+                if(room.users[z].cards.length==0){
+                    room.winUsers.push(room.users[z]);
+                    room.users.splice(z,1);
+                }
+            }
+            io.in(room.name).emit("winStatus",room.winUsers);
             io.to(room.name).emit("tableLoad",room);
             io.to(room.users[i].id).emit("init",room.users[i]);
             return;
@@ -164,6 +180,13 @@ function cut(room,card,user){
                 }
             }
             room.users[i].cards.push(card);
+            for(let z=room.users.length-1;z>=0;z--){
+                if(room.users[z].cards.length==0){
+                    room.winUsers.push(room.users[z]);
+                    room.users.splice(z,1);
+                }
+            }
+            io.in(room.name).emit("winStatus",room.winUsers);
             io.to(room.name).emit("tableLoad",room);
             io.to(room.users[i].id).emit("init",room.users[i]);
             return;
@@ -180,6 +203,13 @@ function cut(room,card,user){
                 }
             }
             room.users[i].cards.push(card);
+            for(let z=room.users.length-1;z>=0;z--){
+                if(room.users[z].cards.length==0){
+                    room.winUsers.push(room.users[z]);
+                    room.users.splice(z,1);
+                }
+            }
+            io.in(room.name).emit("winStatus",room.winUsers);
             io.to(room.name).emit("tableLoad",room);
             io.to(room.users[i].id).emit("init",room.users[i]);
             return;
@@ -196,6 +226,13 @@ function cut(room,card,user){
                 }
             }
             room.users[i].cards.push(card);
+            for(let z=room.users.length-1;z>=0;z--){
+                if(room.users[z].cards.length==0){
+                    room.winUsers.push(room.users[z]);
+                    room.users.splice(z,1);
+                }
+            }
+            io.in(room.name).emit("winStatus",room.winUsers);
             io.to(room.name).emit("tableLoad",room);
             io.to(room.users[i].id).emit("init",room.users[i]);
             return;
@@ -212,6 +249,13 @@ function cut(room,card,user){
                 }
             }
             room.users[i].cards.push(card);
+            for(let z=room.users.length-1;z>=0;z--){
+                if(room.users[z].cards.length==0){
+                    room.winUsers.push(room.users[z]);
+                    room.users.splice(z,1);
+                }
+            }
+            io.in(room.name).emit("winStatus",room.winUsers);
             io.to(room.name).emit("tableLoad",room);
             io.to(room.users[i].id).emit("init",room.users[i]);
             return;
@@ -236,12 +280,23 @@ function cut(room,card,user){
         }
     }
     us.cards.push(card);
+    for(let z=room.users.length-1;z>=0;z--){
+        if(room.users[z].cards.length==0){
+            room.winUsers.push(room.users[z]);
+            room.users.splice(z,1);
+        }
+    }
+    io.in(room.name).emit("winStatus",room.winUsers);
     io.to(room.name).emit("tableLoad",room);
     io.to(us.id).emit("init",us);
     return;
 }
 function clearTable(room){
     room.index=0;
+    if(room.users.length==0){
+        io.to(room.name).emit("tableLoad",room);
+        return;
+    }
     for(let i in room.users){
         if(room.users[i].currentCard.code[0]==="A"){
             room.currentChance=parseInt(i);
