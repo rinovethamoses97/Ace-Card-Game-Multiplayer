@@ -51,6 +51,23 @@
                     </div>   
                 </div>
             </div>
+            <div id="chat" style="display: none;">
+                <div class="row">
+                    <div class="col-md-12" id="chatWindow">
+    
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-10">
+                        <input type="text" id="msg" placeholder="send messages here">
+                    </div>
+                    <div class="col-md-2">
+                        <button onclick="send()">Send</button>
+                    </div>
+    
+                </div>
+            </div>
+
         </div>
     </body>
     <script src="/socket.io/socket.io.js"></script>
@@ -101,6 +118,7 @@
                 $("#cards").append(`<img id='${user.cards[i].code}' onclick=select('${user.cards[i].code}') src='${user.cards[i].image}'>`);
             }
             $("#buttons").html("<button id='play' onclick='playGame()'>Put on Table</button");
+            $("#chat").show();
         });
         socket.on("tableLoad",function(room){
             console.log(room);
@@ -148,6 +166,12 @@
                 
             }
             return true;
+        }
+        function send(){
+            let msg=document.getElementById("msg").value;
+            document.getElementById("msg").value=""
+            if(msg!="")
+                socket.emit("msgSend",{user:currentUser,roomName:roomName,msg:msg});
         }
         function select(id){
             for(let i in currentRoom.users){
@@ -198,6 +222,12 @@
             $("#winStatus").html("");
             for(let i in winUsers){
                 $("#winStatus").append(`<p>${i}. ${winUsers[i].name} won</p>`);
+            }
+        });
+        socket.on("newMsg",(messages)=>{
+            $("#chatWindow").html("");
+            for(let i in messages){
+                $("#chatWindow").append(`<div class='row' style='background-color:yellow'>${messages[i].user.name}-->${messages[i].msg}</div>`)
             }
         })
     </script>

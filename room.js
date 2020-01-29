@@ -6,6 +6,7 @@ class Room{
         this.currentChance=0;
         this.index=0;
         this.winUsers=[];
+        this.msg=[];
     }
 } 
 module.exports=Room;

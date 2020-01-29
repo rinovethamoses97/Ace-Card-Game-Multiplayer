@@ -52,11 +52,20 @@ io.on("connection",(socket)=>{
             }
         }
     });
+    socket.on("msgSend",(req)=>{
+        for(let i in rooms){
+            if(rooms[i].name===req.roomName){
+                rooms[i].msg.push({user:req.user,msg:req.msg});
+                io.sockets.in(rooms[i].name).emit("newMsg",rooms[i].msg);
+                return;
+            }
+        }
+    })
     socket.on("startGame",(roomName)=>{
         let room=lockRoom(roomName);
         let noOfUsers=room.users.length;
-        let noOfCardsForPlayer=Math.floor(52/noOfUsers);
-        // let noOfCardsForPlayer=3;//for development purpose
+        // let noOfCardsForPlayer=Math.floor(52/noOfUsers);
+        let noOfCardsForPlayer=3;//for development purpose
         axios.get("https://deckofcardsapi.com/api/deck/new/draw/?count="+(noOfCardsForPlayer*noOfUsers)).then((res)=>{
             let index=0;
             let AS=false;
