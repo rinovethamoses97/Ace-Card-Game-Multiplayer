@@ -7,6 +7,7 @@ class Room{
         this.index=0;
         this.winUsers=[];
         this.msg=[];
+        this.gameLogs=[];
     }
 } 
 module.exports=Room;

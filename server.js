@@ -64,8 +64,8 @@ io.on("connection",(socket)=>{
     socket.on("startGame",(roomName)=>{
         let room=lockRoom(roomName);
         let noOfUsers=room.users.length;
-        let noOfCardsForPlayer=Math.floor(52/noOfUsers);
-        // let noOfCardsForPlayer=3;//for development purpose
+        //let noOfCardsForPlayer=Math.floor(52/noOfUsers);
+        let noOfCardsForPlayer=3;//for development purpose
         axios.get("https://deckofcardsapi.com/api/deck/new/draw/?count="+(noOfCardsForPlayer*noOfUsers)).then((res)=>{
             let index=0;
             let AS=false;
@@ -113,7 +113,6 @@ io.on("connection",(socket)=>{
                                     rooms[i].users[j].cards.splice(x,1);
                                     io.to(rooms[i].name).emit("tableLoad",rooms[i]);
                                     io.to(rooms[i].users[j].id).emit("init",rooms[i].users[j]); 
-                                    
                                     setTimeout(cut,2000,rooms[i],rooms[i].users[j].currentCard,rooms[i].users[j]);
                                     return;
                                 }
@@ -126,15 +125,23 @@ io.on("connection",(socket)=>{
                                 
                                 if(rooms[i].index===rooms[i].users.length){
                                     // clear the table
+                                    let log="";
+                                    for(let a in rooms[i].users){
+                                        log+=rooms[i].users[a].name+":"+rooms[i].users[a].currentCard.code+"   ";
+                                    }
+                                    rooms[i].gameLogs.push("Table Cleared "+log);  
                                     io.to(rooms[i].name).emit("tableLoad",rooms[i]);
-                                    io.to(rooms[i].users[j].id).emit("init",rooms[i].users[j]);
+                                    io.to(rooms[i].users[j].id).emit("init",rooms[i].users[j]);     
+                                    let temp=[];                       
                                     for(let z=rooms[i].users.length-1;z>=0;z--){
                                         if(rooms[i].users[z].cards.length==0){
-                                            rooms[i].winUsers.push(rooms[i].users[z]);
+                                            temp.push(rooms[i].users[z]);
                                             rooms[i].users.splice(z,1);
                                         }
-                                    }            
-                                    io.in(rooms[i].name).emit("winStatus",rooms[i].winUsers);           
+                                    }       
+                                    if(temp.length>0)
+                                        rooms[i].winUsers.push(temp);    
+                                    io.in(rooms[i].name).emit("winStatus",rooms[i].winUsers);         
                                     setTimeout(clearTable,2000,rooms[i]);
                                     return;
                                 }
@@ -155,27 +162,38 @@ io.on("connection",(socket)=>{
 });
 function cut(room,card,user){
     room.index=0;
+    let cutUser;
+    let log=" ";
+    for(let a in room.users){
+        if(room.users[a].currentCard !=null)
+            log+=room.users[a].name+":"+room.users[a].currentCard.code+"   ";
+    }
     user.currentCard=null;
     for(let i in room.users){
         if(room.users[i].currentCard!=null && room.users[i].currentCard.code[0]==="A"){
             room.currentChance=parseInt(i);
+            cutUser=room.users[i];
             room.users[i].currentChance=true;
             for(let j in room.users){
                 if(room.users[j].currentCard!=null){
                     room.users[i].cards.push(room.users[j].currentCard);
-                    room.users[i].currentCard=null;
+                    room.users[j].currentCard=null;
                 }
             }
             room.users[i].cards.push(card);
+            room.gameLogs.push(room.users[i].name+" got Cut by  "+user.name+log)
+            let temp=[];
             for(let z=room.users.length-1;z>=0;z--){
                 if(room.users[z].cards.length==0){
-                    room.winUsers.push(room.users[z]);
+                    temp.push(room.users[z]);
                     room.users.splice(z,1);
                 }
             }
+            if(temp.length>0)
+            room.winUsers.push(temp);
             io.in(room.name).emit("winStatus",room.winUsers);
             io.to(room.name).emit("tableLoad",room);
-            io.to(room.users[i].id).emit("init",room.users[i]);
+            io.to(cutUser.id).emit("init",cutUser);
             return;
         }
     }
@@ -183,22 +201,27 @@ function cut(room,card,user){
         if( room.users[i].currentCard!=null && room.users[i].currentCard.code[0]==="K"){
             room.currentChance=parseInt(i);
             room.users[i].currentChance=true;
+            cutUser=room.users[i];
             for(let j in room.users){
                 if(room.users[j].currentCard!=null){
                     room.users[i].cards.push(room.users[j].currentCard);
-                    room.users[i].currentCard=null;
+                    room.users[j].currentCard=null;
                 }
             }
             room.users[i].cards.push(card);
+            room.gameLogs.push(room.users[i].name+" got Cut by  "+user.name+log)
+            let temp=[];
             for(let z=room.users.length-1;z>=0;z--){
                 if(room.users[z].cards.length==0){
-                    room.winUsers.push(room.users[z]);
+                    temp.push(room.users[z]);
                     room.users.splice(z,1);
                 }
             }
+            if(temp.length>0)
+            room.winUsers.push(temp);
             io.in(room.name).emit("winStatus",room.winUsers);
             io.to(room.name).emit("tableLoad",room);
-            io.to(room.users[i].id).emit("init",room.users[i]);
+            io.to(cutUser.id).emit("init",cutUser);
             return;
         }
     }
@@ -206,22 +229,27 @@ function cut(room,card,user){
         if(room.users[i].currentCard!=null && room.users[i].currentCard.code[0]==="Q"){
             room.currentChance=parseInt(i);
             room.users[i].currentChance=true;
+            cutUser=room.users[i];
             for(let j in room.users){
                 if(room.users[j].currentCard!=null){
                     room.users[i].cards.push(room.users[j].currentCard);
-                    room.users[i].currentCard=null;
+                    room.users[j].currentCard=null;
                 }
             }
             room.users[i].cards.push(card);
+            room.gameLogs.push(room.users[i].name+" got Cut by  "+user.name+log);
+            let temp=[];
             for(let z=room.users.length-1;z>=0;z--){
                 if(room.users[z].cards.length==0){
-                    room.winUsers.push(room.users[z]);
+                    temp.push(room.users[z]);
                     room.users.splice(z,1);
                 }
             }
+            if(temp.length>0)
+            room.winUsers.push(temp);
             io.in(room.name).emit("winStatus",room.winUsers);
             io.to(room.name).emit("tableLoad",room);
-            io.to(room.users[i].id).emit("init",room.users[i]);
+            io.to(cutUser.id).emit("init",cutUser);
             return;
         }
     }
@@ -229,22 +257,27 @@ function cut(room,card,user){
         if(room.users[i].currentCard!=null && room.users[i].currentCard.code[0]==="J"){
             room.currentChance=parseInt(i);
             room.users[i].currentChance=true;
+            cutUser=room.users[i];
             for(let j in room.users){
                 if(room.users[j].currentCard!=null){
                     room.users[i].cards.push(room.users[j].currentCard);
-                    room.users[i].currentCard=null;
+                    room.users[j].currentCard=null;
                 }
             }
             room.users[i].cards.push(card);
+            room.gameLogs.push(room.users[i].name+" got Cut by  "+user.name+log)
+            let temp=[];
             for(let z=room.users.length-1;z>=0;z--){
                 if(room.users[z].cards.length==0){
-                    room.winUsers.push(room.users[z]);
+                    temp.push(room.users[z]);
                     room.users.splice(z,1);
                 }
             }
+            if(temp.length>0)
+            room.winUsers.push(temp);
             io.in(room.name).emit("winStatus",room.winUsers);
             io.to(room.name).emit("tableLoad",room);
-            io.to(room.users[i].id).emit("init",room.users[i]);
+            io.to(cutUser.id).emit("init",cutUser);
             return;
         }
     }
@@ -252,22 +285,27 @@ function cut(room,card,user){
         if(room.users[i].currentCard!=null && room.users[i].currentCard.code[0]==="0"){
             room.currentChance=parseInt(i);
             room.users[i].currentChance=true;
+            cutUser=room.users[i];
             for(let j in room.users){
                 if(room.users[j].currentCard!=null){
                     room.users[i].cards.push(room.users[j].currentCard);
-                    room.users[i].currentCard=null;
+                    room.users[j].currentCard=null;
                 }
             }
             room.users[i].cards.push(card);
+            room.gameLogs.push(room.users[i].name+" got Cut by  "+user.name+log);
+            let temp=[];
             for(let z=room.users.length-1;z>=0;z--){
                 if(room.users[z].cards.length==0){
-                    room.winUsers.push(room.users[z]);
+                    temp.push(room.users[z]);
                     room.users.splice(z,1);
                 }
             }
+            if(temp.length>0)
+            room.winUsers.push(temp);
             io.in(room.name).emit("winStatus",room.winUsers);
             io.to(room.name).emit("tableLoad",room);
-            io.to(room.users[i].id).emit("init",room.users[i]);
+            io.to(cutUser.id).emit("init",cutUser);
             return;
         }
     }
@@ -290,12 +328,16 @@ function cut(room,card,user){
         }
     }
     us.cards.push(card);
+    room.gameLogs.push(us.name+" got Cut by  "+user.name+log);
+    let temp=[];
     for(let z=room.users.length-1;z>=0;z--){
         if(room.users[z].cards.length==0){
-            room.winUsers.push(room.users[z]);
+            temp.push(room.users[z]);
             room.users.splice(z,1);
         }
     }
+    if(temp.length>0)
+    room.winUsers.push(temp);
     io.in(room.name).emit("winStatus",room.winUsers);
     io.to(room.name).emit("tableLoad",room);
     io.to(us.id).emit("init",us);

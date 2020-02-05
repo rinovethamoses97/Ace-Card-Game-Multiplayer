@@ -66,6 +66,10 @@
                     </div>
     
                 </div>
+            </div><br><br>
+            <div class="row">
+                <div id="logs" class="col-md-12" style="background-color: chartreuse;">
+                </div>
             </div>
 
         </div>
@@ -141,7 +145,11 @@
                         }
                     }
                 }
-            }    
+            }   
+            $("#logs").html(""); 
+            for(let i in currentRoom.gameLogs){
+                $("#logs").append(`<div class='row'>${currentRoom.gameLogs[i]}</div>`);
+            }
         });
         function startGame(){
             socket.emit("startGame",roomName);
@@ -221,7 +229,11 @@
         socket.on("winStatus",function(winUsers){
             $("#winStatus").html("");
             for(let i in winUsers){
-                $("#winStatus").append(`<p>${i}. ${winUsers[i].name} won</p>`);
+                $("#winStatus").append(`<p>`)
+                for(let j in winUsers[i]){
+                    $("#winStatus").append(`${i}. ${winUsers[i][j].name} won  `);
+                }
+                $("#winStatus").append(`</p>`) 
             }
         });
         socket.on("newMsg",(messages)=>{
@@ -229,6 +241,6 @@
             for(let i in messages){
                 $("#chatWindow").append(`<div class='row' style='background-color:yellow'>${messages[i].user.name}-->${messages[i].msg}</div>`)
             }
-        })
+        });
     </script>
 </html>
