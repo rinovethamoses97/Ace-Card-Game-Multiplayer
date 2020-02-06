@@ -64,8 +64,8 @@ io.on("connection",(socket)=>{
     socket.on("startGame",(roomName)=>{
         let room=lockRoom(roomName);
         let noOfUsers=room.users.length;
-        //let noOfCardsForPlayer=Math.floor(52/noOfUsers);
-        let noOfCardsForPlayer=3;//for development purpose
+        let noOfCardsForPlayer=Math.floor(52/noOfUsers);
+        //let noOfCardsForPlayer=3;//for development purpose
         axios.get("https://deckofcardsapi.com/api/deck/new/draw/?count="+(noOfCardsForPlayer*noOfUsers)).then((res)=>{
             let index=0;
             let AS=false;
