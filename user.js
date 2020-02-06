@@ -6,6 +6,7 @@ class User{
         this.connected=true;
         this.currentChance=false;
         this.currentCard=null;
+        this.donkey=false;
     }
 }
 module.exports=User;

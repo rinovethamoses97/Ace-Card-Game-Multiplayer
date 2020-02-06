@@ -231,7 +231,14 @@
             for(let i in winUsers){
                 $("#winStatus").append(`<p>`)
                 for(let j in winUsers[i]){
-                    $("#winStatus").append(`${i}. ${winUsers[i][j].name} won  `);
+                    if(winUsers[i][j].donkey){
+                        $("#winStatus").append(`${i}. ${winUsers[i][j].name} is donkey  `);
+                        $("#cards").html("");
+                    }
+                    else{
+                        $("#winStatus").append(`${i}. ${winUsers[i][j].name} won  `);
+                    }
+                    
                 }
                 $("#winStatus").append(`</p>`) 
             }

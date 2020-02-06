@@ -64,8 +64,8 @@ io.on("connection",(socket)=>{
     socket.on("startGame",(roomName)=>{
         let room=lockRoom(roomName);
         let noOfUsers=room.users.length;
-        let noOfCardsForPlayer=Math.floor(52/noOfUsers);
-        //let noOfCardsForPlayer=3;//for development purpose
+        // let noOfCardsForPlayer=Math.floor(52/noOfUsers);
+        let noOfCardsForPlayer=3;//for development purpose
         axios.get("https://deckofcardsapi.com/api/deck/new/draw/?count="+(noOfCardsForPlayer*noOfUsers)).then((res)=>{
             let index=0;
             let AS=false;
@@ -141,6 +141,12 @@ io.on("connection",(socket)=>{
                                     }       
                                     if(temp.length>0)
                                         rooms[i].winUsers.push(temp);    
+                                    if(rooms[i].users.length==1){
+                                        rooms[i].users[0].donkey=true;
+                                        rooms[i].winUsers.push([rooms[i].users[0]]);
+                                        rooms[i].users[0].cards=[];
+                                        rooms[i].users.splice(0,1);
+                                    }
                                     io.in(rooms[i].name).emit("winStatus",rooms[i].winUsers);         
                                     setTimeout(clearTable,2000,rooms[i]);
                                     return;
@@ -191,9 +197,15 @@ function cut(room,card,user){
             }
             if(temp.length>0)
             room.winUsers.push(temp);
-            io.in(room.name).emit("winStatus",room.winUsers);
+            if(room.users.length==1){
+                room.users[0].donkey=true;
+                room.winUsers.push([room.users[0]]);
+                room.users.splice(0,1);
+            }
+            
             io.to(room.name).emit("tableLoad",room);
             io.to(cutUser.id).emit("init",cutUser);
+            io.in(room.name).emit("winStatus",room.winUsers);
             return;
         }
     }
@@ -219,9 +231,15 @@ function cut(room,card,user){
             }
             if(temp.length>0)
             room.winUsers.push(temp);
-            io.in(room.name).emit("winStatus",room.winUsers);
+            if(room.users.length==1){
+                room.users[0].donkey=true;
+                room.winUsers.push([room.users[0]]);
+                room.users.splice(0,1);
+            }
+           
             io.to(room.name).emit("tableLoad",room);
             io.to(cutUser.id).emit("init",cutUser);
+            io.in(room.name).emit("winStatus",room.winUsers);
             return;
         }
     }
@@ -247,9 +265,15 @@ function cut(room,card,user){
             }
             if(temp.length>0)
             room.winUsers.push(temp);
-            io.in(room.name).emit("winStatus",room.winUsers);
+            if(room.users.length==1){
+                room.users[0].donkey=true;
+                room.winUsers.push([room.users[0]]);
+                room.users.splice(0,1);
+            }
+           
             io.to(room.name).emit("tableLoad",room);
             io.to(cutUser.id).emit("init",cutUser);
+            io.in(room.name).emit("winStatus",room.winUsers);
             return;
         }
     }
@@ -275,9 +299,15 @@ function cut(room,card,user){
             }
             if(temp.length>0)
             room.winUsers.push(temp);
-            io.in(room.name).emit("winStatus",room.winUsers);
+            if(room.users.length==1){
+                room.users[0].donkey=true;
+                room.winUsers.push([room.users[0]]);
+                room.users.splice(0,1);
+            }
+           
             io.to(room.name).emit("tableLoad",room);
             io.to(cutUser.id).emit("init",cutUser);
+            io.in(room.name).emit("winStatus",room.winUsers);
             return;
         }
     }
@@ -303,9 +333,15 @@ function cut(room,card,user){
             }
             if(temp.length>0)
             room.winUsers.push(temp);
-            io.in(room.name).emit("winStatus",room.winUsers);
+            if(room.users.length==1){
+                room.users[0].donkey=true;
+                room.winUsers.push([room.users[0]]);
+                room.users.splice(0,1);
+            }
+            
             io.to(room.name).emit("tableLoad",room);
             io.to(cutUser.id).emit("init",cutUser);
+            io.in(room.name).emit("winStatus",room.winUsers);
             return;
         }
     }
@@ -338,9 +374,15 @@ function cut(room,card,user){
     }
     if(temp.length>0)
     room.winUsers.push(temp);
-    io.in(room.name).emit("winStatus",room.winUsers);
+    if(room.users.length==1){
+        room.users[0].donkey=true;
+        room.winUsers.push([room.users[0]]);
+        room.users.splice(0,1);
+    }
+   
     io.to(room.name).emit("tableLoad",room);
     io.to(us.id).emit("init",us);
+    io.in(room.name).emit("winStatus",room.winUsers);
     return;
 }
 function clearTable(room){
