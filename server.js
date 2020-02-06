@@ -43,13 +43,26 @@ io.on("connection",(socket)=>{
     });
     socket.on("disconnect",()=>{
         for(let i in rooms){
+            let users=[];
             for(let j in rooms[i].users){
                 if(rooms[i].users[j].id===socket.id){
                     // remove the user from the room;
                     rooms[i].users[j].connected=false;
-                    io.sockets.in(rooms[i].name).emit("userJoined",rooms[i].users);
+                }
+                users.push(rooms[i].users[j]);
+            }
+            console.log(rooms[i].winUsers);
+            for(let j in rooms[i].winUsers){
+                for(let k in rooms[i].winUsers[j]){
+                    if(rooms[i].winUsers[j][k].id===socket.id){
+                        // remove the user from the room;
+                        rooms[i].winUsers[j][k].connected=false;
+                    }
+                    users.push(rooms[i].winUsers[j][k]);
                 }
             }
+            console.log(users);
+            io.sockets.in(rooms[i].name).emit("userJoined",users);
         }
     });
     socket.on("msgSend",(req)=>{
